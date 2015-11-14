@@ -1,0 +1,9 @@
+Jestion v1.0
+
+[Usage]
+- Press SCAN to begin recording gesture
+- Press TRAIN to train data
+
+[Changelog]
+- Apply low-pass filter to each sensor
+- SVM training feature completed
