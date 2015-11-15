@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
         mSensorManager.unregisterListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
 
         dataset.normalize();
+        dataset.sensorCalc();
 
         if (Debug) {
             TextView textView = (TextView) findViewById(R.id.textView);

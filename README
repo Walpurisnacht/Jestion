@@ -5,6 +5,7 @@ Jestion v1.0
 - Press TRAIN to train data
 
 [Changelog]
+- Calculate min, max, mean, standard deviation
 - Apply normalize input
 - Apply low-pass filter to each sensor
 - SVM training feature completed
