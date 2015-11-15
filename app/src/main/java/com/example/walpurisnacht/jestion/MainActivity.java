@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //region Tooltip
+
     private Dataset MatParser(String text) {
         String[] lines = text.split("\n");
 
@@ -104,13 +105,9 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < row; i++) {
             String[] s_data = lines[i].split(",");
 
-
-//            i_target[0] = Integer.parseInt(s_data[s_data.length-1]);
             i_target[0] = Integer.parseInt(s_data[s_data.length - 1]);
 
-
             for (int j = 0; j < col; j++) {
-//                i_digit[j] = Integer.parseInt(s_data[j]);
                 i_digit[j] = Float.parseFloat(s_data[j]);
             }
 
@@ -145,38 +142,14 @@ public class MainActivity extends AppCompatActivity {
         mSensorManager.unregisterListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
         mSensorManager.unregisterListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
 
+        dataset.normalize();
+
         if (Debug) {
-            float[] data = new float[9];
-            StringBuilder text = new StringBuilder();
-            Mat sample = dataset.getSample();
-
-            for (int i = 0; i < 64; i++) {
-                sample.get(i,0,data);
-                for (int k = 0; k < 9; k++) {
-                    text.append(data[k]);
-                    text.append(" ");
-                }
-                text.append("endl" + i + "\n");
-            }
-
             TextView textView = (TextView) findViewById(R.id.textView);
             textView.setMovementMethod(new ScrollingMovementMethod());
-            textView.setText(text);
+            textView.setText(dataset.print(Dataset.SAMPLE));
         }
 
-//        Mat sample = dataset.getSample();
-//        float[][] data = new float[64][9];
-//        for (int i = 0; i < 9; i++) {
-//            Mat norm = sample.col(i);
-//            Core.normalize(norm,norm,-1,1,Core.NORM_L2);
-//
-//            float[] tmp = new float[64];
-//            norm.get(0,0,tmp);
-//
-//            for (int j = 0; j < 64; j++) {
-//
-//            }
-//        }
     }
     //endregion
 
@@ -184,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
     private void InitTrain() {
         StringBuilder text = new StringBuilder();
         File file = new File(trainPath);
-
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
@@ -194,10 +166,8 @@ public class MainActivity extends AppCompatActivity {
                 text.append('\n');
             }
             br.close();
-            Log.d(TAG,"Read done");
         }
         catch (IOException e) {
-            Log.d(TAG,e.toString());
         }
 
         //Parse Mat

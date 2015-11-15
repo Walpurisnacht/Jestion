@@ -24,16 +24,17 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:onClick="trainClick"/>
+        android:onClick="trainClick"
+        android:layout_alignTop="@+id/btnScan" />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:text="Scan"
         android:id="@+id/btnScan"
-        android:layout_alignTop="@+id/btnTrain"
-        android:layout_centerHorizontal="true"
-        android:onClick="scanClick"/>
+        android:onClick="scanClick"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
     <Switch
         android:layout_width="wrap_content"
