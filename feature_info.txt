@@ -9,5 +9,8 @@ mean(): Mean value
 std(): Standard deviation
 max(): Largest value in array
 min(): Smallest value in array
+mad(): Median absolute deviation
+sma(): Signal magnitude area
+
 
 The complete list of variables of each feature vector is available in 'features.txt'

@@ -8,5 +8,6 @@ public class Feature {
             Mean,
             StdDev,
             Max,
-            Min;
+            Min,
+            Mad;
 }

@@ -5,6 +5,7 @@ import org.opencv.core.Core.*;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
+import org.opencv.core.Scalar;
 
 /**
  * Created by walpurisnacht on 14/11/2015.
@@ -75,16 +76,22 @@ public class Dataset {
     private Feature calc(int col) {
         MatOfDouble Mean = new MatOfDouble();
         MatOfDouble StdDev = new MatOfDouble();
-        MinMaxLocResult minmax = new MinMaxLocResult();
+        MinMaxLocResult minmax;
+
+        Mat tmpMat = sample;
+
         Feature temp = new Feature();
 
-        Core.meanStdDev(sample.col(col),Mean,StdDev);
-        minmax = Core.minMaxLoc(sample.col(col));
+        Core.meanStdDev(tmpMat.col(col),Mean,StdDev);
+        minmax = Core.minMaxLoc(tmpMat.col(col));
 
         temp.Mean = (float)Mean.get(0,0)[0];
         temp.StdDev = (float)StdDev.get(0,0)[0];
         temp.Min = (float)minmax.minVal;
         temp.Max = (float)minmax.maxVal;
+
+        Core.absdiff(tmpMat.col(col),new Scalar(temp.Mean),tmpMat.col(col));
+        temp.Mad = (float)Core.mean(tmpMat.col(col)).val[0];
 
         return temp;
     }
@@ -130,6 +137,24 @@ public class Dataset {
 
     public Feature getGyrZ() {
         return sensor[8];
+    }
+
+    public float getSmaAcc() {
+        return (float) (Math.abs(Core.sumElems(sample.col(0)).val[0])
+                        + Math.abs(Core.sumElems(sample.col(1)).val[0])
+                        + Math.abs(Core.sumElems(sample.col(2)).val[0])) / 64;
+    }
+
+    public float getSmaMag() {
+        return (float) (Math.abs(Core.sumElems(sample.col(3)).val[0])
+                + Math.abs(Core.sumElems(sample.col(4)).val[0])
+                + Math.abs(Core.sumElems(sample.col(5)).val[0])) / 64;
+    }
+
+    public float getSmaGyr() {
+        return (float) (Math.abs(Core.sumElems(sample.col(6)).val[0])
+                + Math.abs(Core.sumElems(sample.col(7)).val[0])
+                + Math.abs(Core.sumElems(sample.col(8)).val[0])) / 64;
     }
     //endregion
 
