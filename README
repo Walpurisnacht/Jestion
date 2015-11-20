@@ -5,7 +5,7 @@ Jestion v1.0
 - Press TRAIN to train data
 
 [Changelog]
-- Calculate min, max, mean, standard deviation, median absolute deviation, signal magnitude area
+- Calculate min, max, mean, standard deviation, median absolute deviation, signal magnitude area, median, skewness
 - Apply normalize input
 - Apply low-pass filter to each sensor
 - SVM training feature completed

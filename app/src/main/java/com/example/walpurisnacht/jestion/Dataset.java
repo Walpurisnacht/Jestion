@@ -7,6 +7,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Scalar;
 
+import java.util.Arrays;
+
 /**
  * Created by walpurisnacht on 14/11/2015.
  */
@@ -90,6 +92,9 @@ public class Dataset {
         temp.Min = (float)minmax.minVal;
         temp.Max = (float)minmax.maxVal;
 
+        temp.Med = calcMed(col);
+        temp.Skew = 3*(temp.Mean-temp.Med)/temp.StdDev;
+
         Core.absdiff(tmpMat.col(col),new Scalar(temp.Mean),tmpMat.col(col));
         temp.Mad = (float)Core.mean(tmpMat.col(col)).val[0];
 
@@ -155,6 +160,22 @@ public class Dataset {
         return (float) (Math.abs(Core.sumElems(sample.col(6)).val[0])
                 + Math.abs(Core.sumElems(sample.col(7)).val[0])
                 + Math.abs(Core.sumElems(sample.col(8)).val[0])) / 64;
+    }
+
+    private float calcMed(int column) {
+        double[] col = new double[64];
+
+        for (int i = 0; i < 64; i++) {
+            col[i] = sample.get(i,column)[0];
+        }
+
+        Arrays.sort(col);
+
+        int len = col.length;
+        if (len % 2 == 0)
+            return (float)((col[len/2] + col[len/2-1])/2);
+        else
+            return (float)col[len/2];
     }
     //endregion
 

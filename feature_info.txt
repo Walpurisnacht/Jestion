@@ -11,6 +11,8 @@ max(): Largest value in array
 min(): Smallest value in array
 mad(): Median absolute deviation
 sma(): Signal magnitude area
+med(): Median value
+skewness(): skewness of the frequency domain signal
 
 
 The complete list of variables of each feature vector is available in 'features.txt'

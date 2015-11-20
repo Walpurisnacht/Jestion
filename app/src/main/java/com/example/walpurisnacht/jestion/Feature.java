@@ -9,5 +9,7 @@ public class Feature {
             StdDev,
             Max,
             Min,
-            Mad;
+            Mad,
+            Med,
+            Skew;
 }

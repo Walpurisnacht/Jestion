@@ -13,6 +13,12 @@ tAcc-max()-Z
 tAcc-mad()-X
 tAcc-mad()-Y
 tAcc-mad()-Z
+tAcc-med()-X
+tAcc-med()-Y
+tAcc-med()-Z
+tAcc-skewness()-X
+tAcc-skewness()-Y
+tAcc-skewness()-Z
 tAcc-sma()
 tMag-mean()-X
 tMag-mean()-Y
@@ -29,6 +35,12 @@ tMag-max()-Z
 tMag-mad()-X
 tMag-mad()-Y
 tMag-mad()-Z
+tMag-med()-X
+tMag-med()-Y
+tMag-med()-Z
+tMag-skewness()-X
+tMag-skewness()-Y
+tMag-skewness()-Z
 tMag-sma()
 tGyr-mean()-X
 tGyr-mean()-Y
@@ -45,4 +57,10 @@ tGyr-max()-Z
 tGyr-mad()-X
 tGyr-mad()-Y
 tGyr-mad()-Z
+tGyr-med()-X
+tGyr-med()-Y
+tGyr-med()-Z
+tGyr-skewness()-X
+tGyr-skewness()-Y
+tGyr-skewness()-Z
 tGyr-sma()
