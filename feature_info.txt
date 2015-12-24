@@ -14,5 +14,7 @@ sma(): Signal magnitude area
 med(): Median value
 skewness(): skewness of the frequency domain signal
 
+//entropy()
+
 
 The complete list of variables of each feature vector is available in 'features.txt'

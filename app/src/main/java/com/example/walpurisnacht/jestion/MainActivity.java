@@ -1,57 +1,52 @@
 package com.example.walpurisnacht.jestion;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Handler;
-import android.os.Message;
-import android.provider.ContactsContract;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.StrictMode;
+import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.ml.Ml;
-import org.opencv.ml.SVM;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ConcurrentModificationException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "DEBUG";
     private static final float ALPHA = 0.25f;
 
+    private StringBuilder data;
     private boolean Debug = false;
-    private SVM svm_train = SVM.create();
-    String trainPath;
     private SensorManager mSensorManager;
     private SensorEventListener mSensorListener;
-
-    static {
-        System.loadLibrary("opencv_java3");
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        data = new StringBuilder();
 
         Switch aSwitch = (Switch) findViewById(R.id.swtDebug);
         aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -66,69 +61,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void trainClick(View view) {
-
-        SimpleFileDialog FileOpenDialog =  new SimpleFileDialog(MainActivity.this, "FileOpen",
-                new SimpleFileDialog.SimpleFileDialogListener()
-                {
-                    @Override
-                    public void onChosenDir(String chosenDir)
-                    {
-                        // The code in this function will be executed when the dialog OK button is pushed
-                        trainPath = chosenDir;
-
-                        TextView textView = (TextView) findViewById(R.id.textView);
-                        textView.setText(trainPath);
-                        InitTrain();
-                    }
-                });
-
-        //You can change the default filename using the public variable "Default_File_Name"
-        FileOpenDialog.Default_File_Name = "";
-        FileOpenDialog.chooseFile_or_Dir();
-    }
-
-    //region Tooltip
-
-    private Dataset MatParser(String text) {
-        String[] lines = text.split("\n");
-
-        int row = lines.length;
-        int col = lines[0].split(",").length-1;
-
-        Dataset dataset = new Dataset(row,col);
-
-        int[] i_target = new int[1];
-        float[] i_digit = new float[col];
-
-        //Parse
-        for (int i = 0; i < row; i++) {
-            String[] s_data = lines[i].split(",");
-
-            i_target[0] = Integer.parseInt(s_data[s_data.length - 1]);
-
-            for (int j = 0; j < col; j++) {
-                i_digit[j] = Float.parseFloat(s_data[j]);
-            }
-
-            dataset.putSample(i,0,i_digit);
-            dataset.putResponse(i, 0, i_target);
-        }
-
-        return dataset;
-    }
-
-    private void Train(Dataset dataset) {
-        //Param
-        svm_train.setC(1000);
-        svm_train.setGamma(0.1);
-        svm_train.setKernel(SVM.RBF);
-        svm_train.setType(SVM.C_SVC);
-        //Train
-        svm_train.train(dataset.getSample(), Ml.ROW_SAMPLE, dataset.getResponse());
-        if (svm_train.isTrained()) Log.d(TAG,"Trained");
-    }
-
     protected float[] LowPass(float[] input, float[] output){
         if ( output == null ) return input;
         for ( int i=0; i<input.length; i++ ) {
@@ -137,43 +69,57 @@ public class MainActivity extends AppCompatActivity {
         return output;
     }
 
-    private void HaltSensor(Dataset dataset) {
+    private void HaltSensor() {
         mSensorManager.unregisterListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
         mSensorManager.unregisterListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
         mSensorManager.unregisterListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
 
-        dataset.normalize();
-        dataset.sensorCalc();
+        Log.d(TAG, data.toString());
 
         if (Debug) {
             TextView textView = (TextView) findViewById(R.id.textView);
             textView.setMovementMethod(new ScrollingMovementMethod());
-            textView.setText(dataset.print(Dataset.SAMPLE));
+            textView.setText(data.toString());
         }
 
+        StringBuilder url = new StringBuilder();
+        url.append("http://");
+
+        EditText editText = (EditText) findViewById(R.id.urlText);
+        url.append(editText.getText());
+
+        SendData(data, url.toString());
+    }
+
+    private void SendData(StringBuilder data, String url) {
+        HttpClient client = new DefaultHttpClient();
+        HttpPost httpPost = new HttpPost(url);
+
+        try {
+            List<NameValuePair> lq = new ArrayList<NameValuePair>();
+            lq.add(new BasicNameValuePair("query",data.toString()));
+
+            httpPost.setEntity(new UrlEncodedFormEntity(lq));
+            Log.d(TAG, "Sended!");
+            HttpResponse resp = client.execute(httpPost);
+            HttpEntity entity = resp.getEntity();
+
+            if (entity != null) {
+                StringBuilder res = new StringBuilder();
+                byte[] b = EntityUtils.toByteArray(entity);
+                res.append(new String(b,0,b.length));
+
+                Log.d(TAG,"Received: " + res.toString());
+
+                TextView textView = (TextView) findViewById(R.id.textView);
+                textView.setText(res.toString());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     //endregion
-
-    //region Process
-    private void InitTrain() {
-        StringBuilder text = new StringBuilder();
-        File file = new File(trainPath);
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                text.append(line);
-                text.append('\n');
-            }
-            br.close();
-        }
-        catch (IOException e) {
-        }
-
-        //Parse Mat
-        Train(MatParser(text.toString()));
-    }
 
     private void RecordSensor() {
 
@@ -185,12 +131,10 @@ public class MainActivity extends AppCompatActivity {
             float[] mag = new float[3];
             float[] gyr = new float[3];
 
-            Dataset dataset = new Dataset(64,9);
-
             int cnt = 0;
             @Override
             public void onSensorChanged(SensorEvent event) {
-                if (cnt >= 64) HaltSensor(dataset);
+                if (cnt == 64) HaltSensor();
                 Sensor sensor = event.sensor;
 
                 if (sensor.getType() == Sensor.TYPE_ACCELEROMETER)  {
@@ -203,9 +147,24 @@ public class MainActivity extends AppCompatActivity {
                     gyr = LowPass(event.values.clone(),gyr);
                 }
 
-                dataset.putSample(cnt,0,acc);
-                dataset.putSample(cnt,3,mag);
-                dataset.putSample(cnt,6,gyr);
+                data.append("Line " + cnt + " ");
+
+                for (float f:acc) {
+                    data.append(f);
+                    data.append(",");
+                }
+
+                for (float f:mag) {
+                    data.append(f);
+                    data.append(",");
+                }
+
+                for (int i = 0; i < 3; i++) {
+                    data.append(gyr[i]);
+                    if (i != 2) data.append(",");
+                    else data.append("\n");
+                }
+
                 cnt++;
             }
 
