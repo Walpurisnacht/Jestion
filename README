@@ -9,3 +9,9 @@ Jestion v1.0
 - Apply normalize input
 - Apply low-pass filter to each sensor
 - SVM training feature completed
+
+Jestion v2.0
+
+[Usage]
+- Only push raw data to server
+- Get py script solve the prediction

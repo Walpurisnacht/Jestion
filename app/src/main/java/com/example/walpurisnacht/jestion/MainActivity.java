@@ -83,10 +83,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         StringBuilder url = new StringBuilder();
-        url.append("http://");
+        url.append("http://jestion.jslab.xyz");
 
-        EditText editText = (EditText) findViewById(R.id.urlText);
-        url.append(editText.getText());
+        //EditText editText = (EditText) findViewById(R.id.urlText);
+        //url.append(editText.getText());
 
         SendData(data, url.toString());
     }
@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG,"Received: " + res.toString());
 
                 TextView textView = (TextView) findViewById(R.id.textView);
+                textView.setMovementMethod(new ScrollingMovementMethod());
                 textView.setText(res.toString());
             }
 
@@ -147,8 +148,6 @@ public class MainActivity extends AppCompatActivity {
                     gyr = LowPass(event.values.clone(),gyr);
                 }
 
-                data.append("Line " + cnt + " ");
-
                 for (float f:acc) {
                     data.append(f);
                     data.append(",");
@@ -181,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void scanClick(View view) {
+        data.delete(0,data.length());
         RecordSensor();
     }
     //endregion
