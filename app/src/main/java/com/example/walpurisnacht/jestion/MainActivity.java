@@ -9,9 +9,9 @@ import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -48,25 +48,19 @@ public class MainActivity extends AppCompatActivity {
 
         data = new StringBuilder();
 
-        Switch aSwitch = (Switch) findViewById(R.id.swtDebug);
+        final Switch aSwitch = (Switch) findViewById(R.id.swtModel);
         aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     Debug = true;
+                    aSwitch.setText("LINEAR");
                 } else {
                     Debug = false;
+                    aSwitch.setText("RBF");
                 }
             }
         });
-    }
-
-    protected float[] LowPass(float[] input, float[] output){
-        if ( output == null ) return input;
-        for ( int i=0; i<input.length; i++ ) {
-            output[i] = output[i] + ALPHA * (input[i] - output[i]);
-        }
-        return output;
     }
 
     private void HaltSensor() {
@@ -76,28 +70,28 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, data.toString());
 
-        if (Debug) {
-            TextView textView = (TextView) findViewById(R.id.textView);
-            textView.setMovementMethod(new ScrollingMovementMethod());
-            textView.setText(data.toString());
-        }
-
         StringBuilder url = new StringBuilder();
         url.append("http://jestion.jslab.xyz");
 
-        //EditText editText = (EditText) findViewById(R.id.urlText);
-        //url.append(editText.getText());
-
-        SendData(data, url.toString());
+        SendData(data.toString().substring(0,data.length()-3), url.toString());
     }
 
-    private void SendData(StringBuilder data, String url) {
+    private void SendData(String data, String url) {
         HttpClient client = new DefaultHttpClient();
         HttpPost httpPost = new HttpPost(url);
 
         try {
             List<NameValuePair> lq = new ArrayList<NameValuePair>();
-            lq.add(new BasicNameValuePair("query",data.toString()));
+            lq.add(new BasicNameValuePair("query", data.toString()));
+            if (Debug) {
+                lq.add(new BasicNameValuePair("model","linear"));
+                Log.d(TAG,"linear");
+            }
+            else {
+                lq.add(new BasicNameValuePair("model","rbf"));
+                Log.d(TAG,"RBF");
+            }
+            Log.d(TAG,data);
 
             httpPost.setEntity(new UrlEncodedFormEntity(lq));
             Log.d(TAG, "Sended!");
@@ -139,13 +133,13 @@ public class MainActivity extends AppCompatActivity {
                 Sensor sensor = event.sensor;
 
                 if (sensor.getType() == Sensor.TYPE_ACCELEROMETER)  {
-                    acc = LowPass(event.values.clone(),acc);
+                    acc = event.values.clone();
                 }
                 else if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)    {
-                    mag = LowPass(event.values.clone(),mag);
+                    mag = event.values.clone();
                 }
                 else if (sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-                    gyr = LowPass(event.values.clone(),gyr);
+                    gyr = event.values.clone();
                 }
 
                 for (float f:acc) {
@@ -161,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < 3; i++) {
                     data.append(gyr[i]);
                     if (i != 2) data.append(",");
-                    else data.append("\n");
+                    else data.append("=");
                 }
 
                 cnt++;
@@ -180,8 +174,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void scanClick(View view) {
-        data.delete(0,data.length());
+        data.delete(0, data.length());
         RecordSensor();
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int action = event.getAction();
+        int keyCode = event.getKeyCode();
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                if (action == KeyEvent.ACTION_DOWN) {
+                    //TODO
+                    data.delete(0, data.length());
+                    RecordSensor();
+                }
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                if (action == KeyEvent.ACTION_DOWN) {
+                    //TODO
+                    data.delete(0, data.length());
+                    RecordSensor();
+                }
+                return true;
+            default:
+                return super.dispatchKeyEvent(event);
+        }
     }
     //endregion
 }
